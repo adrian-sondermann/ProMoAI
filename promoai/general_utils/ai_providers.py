@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class AIProviders(Enum):
+    AZUREOPENAI = "Azure OpenAI"
     GOOGLE = "Google"
     OPENAI = "OpenAI"
     DEEPSEEK = "DeepSeek"
@@ -10,6 +11,7 @@ class AIProviders(Enum):
     MISTRAL_AI = "Mistral AI"
 
 AI_MODEL_DEFAULTS = {
+        AIProviders.AZUREOPENAI.value: "gpt-4o",
         AIProviders.GOOGLE.value: 'gemini-2.5-pro-exp-03-25',
         AIProviders.OPENAI.value: 'gpt-4',
         AIProviders.DEEPSEEK.value: 'deepseek-reasoner',
@@ -18,9 +20,10 @@ AI_MODEL_DEFAULTS = {
         AIProviders.MISTRAL_AI.value: 'mistral-large-latest'
     }
 
-DEFAULT_AI_PROVIDER = AIProviders.GOOGLE.value
+DEFAULT_AI_PROVIDER = AIProviders.AZUREOPENAI.value
 
 AI_HELP_DEFAULTS = {
+        AIProviders.AZUREOPENAI.value: "Enter a Azure OpenAI model name.",
         AIProviders.GOOGLE.value: "Enter a Google model name. You can get a **free Google API key** and check the latest models under: https://ai.google.dev/.",
         AIProviders.OPENAI.value: "Enter an OpenAI model name. You can get an OpenAI API key and check the latest models under: https://openai.com/pricing.",
         AIProviders.DEEPSEEK.value: "Enter a DeepSeek model name. You can get a DeepSeek API key and check the latest models under: https://api-docs.deepseek.com/.",

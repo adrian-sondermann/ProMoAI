@@ -1,3 +1,5 @@
+import traceback
+import requests
 from typing import Callable, List, TypeVar, Any
 from promoai.general_utils.ai_providers import AIProviders
 from promoai.prompting.prompt_engineering import ERROR_MESSAGE_FOR_MODEL_GENERATION
@@ -17,7 +19,9 @@ def generate_result_with_error_handling(conversation: List[dict[str:str]],
         -> tuple[str, any, list[Any]]:
     error_history = []
     for iteration in range(max_iterations + additional_iterations):
-        if ai_provider == AIProviders.GOOGLE.value:
+        if ai_provider == AIProviders.AZUREOPENAI.value:
+            response = generate_response_with_history_azure_openai(conversation)
+        elif ai_provider == AIProviders.GOOGLE.value:
             response = generate_response_with_history_google(conversation, api_key, llm_name)
         elif ai_provider == AIProviders.ANTHROPIC.value:
             response = generate_response_with_history_anthropic(conversation, api_key, llm_name)
@@ -36,7 +40,7 @@ def generate_result_with_error_handling(conversation: List[dict[str:str]],
                 raise Exception(f"AI provider {ai_provider} is not supported!")
             response = generate_response_with_history(conversation, api_key, llm_name, api_url,
                                                       use_responses_api=use_responses_api)
-        # print_conversation(conversation)
+        print_conversation(conversation, start=len(conversation)-2)
         try:
             conversation.append({"role": "assistant", "content": response})
             auto_duplicate = iteration >= max_iterations
@@ -46,6 +50,7 @@ def generate_result_with_error_handling(conversation: List[dict[str:str]],
             error_description = str(e)
             error_history.append(error_description)
             if constants.ENABLE_PRINTS:
+                print(f"Error detected in iteration {str(iteration + 1)}: {traceback.format_exc()}")
                 print("Error detected in iteration " + str(iteration + 1))
             new_message = f"Executing your code led to an error! " + standard_error_message + "This is the error" \
                                                                                               f" message: {error_description}"
@@ -55,10 +60,10 @@ def generate_result_with_error_handling(conversation: List[dict[str:str]],
                     " iterations! This is the error history: " + str(error_history))
 
 
-def print_conversation(conversation):
+def print_conversation(conversation: List[Dict[str, str]], start: int = 0) -> None:
     if constants.ENABLE_PRINTS:
         print("\n\n")
-        for index, msg in enumerate(conversation):
+        for index, msg in enumerate(conversation, start=start):
             print("\t%d: %s" % (index, str(msg).replace("\n", " ").replace("\r", " ")))
         print("\n\n")
 
@@ -130,7 +135,47 @@ def generate_response_with_history(conversation_history, api_key, llm_name, api_
         raise Exception("Connection failed! This is the response: " + str(response))
 
 
-def generate_response_with_history_google(conversation_history, api_key, google_model) -> str:
+def generate_response_with_history_azure_openai(conversation_history: List[Dict[str, str]]) -> str:
+    # base_url = os.getenv("AZURE_OPENAI_BASE_URL")
+    # model_name = os.getenv("AZURE_OPENAI_MODEL_NAME", "gpt-4o")
+    # model_version = os.getenv("AZURE_OPENAI_MODEL_VERSION")
+    # api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    base_url = config.azure_openai.base_url
+    model_name = config.azure_openai.model_name
+    model_version = config.azure_openai.model_version
+    api_key = config.azure_openai.api_key
+
+    api_url = (
+        f"{base_url}/openai/deployments/{model_name}/chat/completions?api-version={model_version}"
+    )
+    print(f"calling {api_url}")
+    headers = {"Content-Type": "application/json", "api-key": api_key}
+    payload = {
+        "messages": [
+            {"role": msg["role"], "content": msg["content"]} for msg in conversation_history
+        ],
+        "temperature": 0.0,
+    }
+
+    try:
+        response = requests.post(api_url, headers=headers, json=payload)
+        response.raise_for_status()
+        response_json = response.json()
+        return response_json["choices"][0]["message"]["content"]
+    except Exception as e:
+        raise Exception(f"Azure OpenAI request failed: {e}")
+
+
+def generate_response_with_history_portal_api(conversation_history: List[Dict[str, str]]) -> str:
+    # host = config.portal_api.host
+    # port = config.portal_api.port
+    # sdk_api_key = config.portal_api.sdk_api_key
+    # use_ssl = config.portal_api.use_ssl
+
+    # TODO
+    raise Exception("LangChain AI Portal API request failed: Not yet implemented")
+
+
     """
     Generates a response from the LLM using the conversation history.
 
@@ -159,9 +204,9 @@ def generate_response_with_history_anthropic(conversation, api_key, llm_name):
     message = client.messages.create(
         model=llm_name,
         max_tokens=8192,
-        messages=conversation
+        messages=conversation  # type: ignore[arg-type]
     )
     try:
-        return message.content[0].text
+        return message.content[0].text  # type: ignore[union-attr]
     except Exception:
         raise Exception("Connection failed! This is the response: " + str(message))

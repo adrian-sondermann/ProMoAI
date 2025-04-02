@@ -1,13 +1,32 @@
+from typing import Dict, List, Set, Tuple
+
 from pm4py import PetriNet
 from pm4py.objects.powl.BinaryRelation import BinaryRelation
-from pm4py.objects.powl.obj import OperatorPOWL, POWL, Operator, StrictPartialOrder
+from pm4py.objects.powl.obj import (
+    POWL,
+    Operator,
+    OperatorPOWL,
+    StrictPartialOrder,
+)
 
-from promoai.pn_to_powl.converter_utils.cut_detection import mine_base_case, mine_xor, mine_loop, mine_partial_order, \
-    mine_self_loop
-from promoai.pn_to_powl.converter_utils.weak_reachability import get_simplified_reachability_graph
-
-from promoai.pn_to_powl.converter_utils.preprocessing import validate_workflow_net, preprocess
-from promoai.pn_to_powl.converter_utils.subnet_creation import clone_subnet, apply_partial_order_projection
+from promoai.pn_to_powl.converter_utils.cut_detection import (
+    mine_base_case,
+    mine_loop,
+    mine_partial_order,
+    mine_self_loop,
+    mine_xor,
+)
+from promoai.pn_to_powl.converter_utils.preprocessing import (
+    preprocess,
+    validate_workflow_net,
+)
+from promoai.pn_to_powl.converter_utils.subnet_creation import (
+    apply_partial_order_projection,
+    clone_subnet,
+)
+from promoai.pn_to_powl.converter_utils.weak_reachability import (
+    get_simplified_reachability_graph,
+)
 
 
 def convert_workflow_net_to_powl(net: PetriNet) -> POWL:
@@ -54,7 +73,7 @@ def __translate_petri_to_powl(net: PetriNet, start_place: PetriNet.Place, end_pl
 
 
 def __translate_xor(net: PetriNet, start_place: PetriNet.Place, end_place: PetriNet.Place,
-                    choice_branches: list[set[PetriNet.Transition]]):
+                    choice_branches: list[set[PetriNet.Transition]]) -> OperatorPOWL:
     children = []
     for branch in choice_branches:
         child_powl = __create_sub_powl_model(net, branch, start_place, end_place)
@@ -63,7 +82,7 @@ def __translate_xor(net: PetriNet, start_place: PetriNet.Place, end_place: Petri
     return xor_operator
 
 
-def __translate_loop(net: PetriNet, do_nodes, redo_nodes,
+def __translate_loop(net: PetriNet, do_nodes: set[PetriNet.Transition], redo_nodes: set[PetriNet.Transition],
                      start_place: PetriNet.Place,
                      end_place: PetriNet.Place) -> OperatorPOWL:
     do_powl = __create_sub_powl_model(net, do_nodes, start_place, end_place)
@@ -72,7 +91,7 @@ def __translate_loop(net: PetriNet, do_nodes, redo_nodes,
     return loop_operator
 
 
-def __validate_partial_order(po: StrictPartialOrder):
+def __validate_partial_order(po: StrictPartialOrder) -> StrictPartialOrder:
     po.order.add_transitive_edges()
     if po.order.is_irreflexive():
         return po
@@ -80,15 +99,20 @@ def __validate_partial_order(po: StrictPartialOrder):
         raise Exception("Conversion failed!")
 
 
-def __translate_partial_order(net, transition_groups, i_place: PetriNet.Place, f_place: PetriNet.Place):
+def __translate_partial_order(
+    net: PetriNet, transition_groups: List[Set[PetriNet.Transition]], i_place: PetriNet.Place, f_place: PetriNet.Place
+) -> StrictPartialOrder:
 
-    groups = [tuple(g) for g in transition_groups]
-    transition_to_group_map = {transition: g for g in groups for transition in g}
+    groups: List[Tuple[PetriNet.Transition, ...]] = [tuple(g) for g in transition_groups]
+    transition_to_group_map: Dict[PetriNet.Transition, Tuple[PetriNet.Transition, ...]] = {
+        transition: g for g in groups for transition in g
+    }
 
-    group_start_places = {g: set() for g in groups}
-    group_end_places = {g: set() for g in groups}
+    group_start_places: Dict[Tuple[PetriNet.Transition, ...], Set] = {g: set() for g in groups}
+    group_end_places: Dict[Tuple[PetriNet.Transition, ...], Set] = {g: set() for g in groups}
     temp_po = BinaryRelation(groups)
 
+    p: PetriNet.Place
     for p in net.places:
         sources = {arc.source for arc in p.in_arcs}
         targets = {arc.target for arc in p.out_arcs}
@@ -137,9 +161,9 @@ def __translate_partial_order(net, transition_groups, i_place: PetriNet.Place, f
     return po
 
 
-def __create_sub_powl_model(net, branch: set[PetriNet.Transition],
+def __create_sub_powl_model(net: PetriNet, branch: set[PetriNet.Transition],
                             start_place: PetriNet.Place,
-                            end_place: PetriNet.Place):
+                            end_place: PetriNet.Place) -> POWL:
     subnet, subnet_start_place, subnet_end_place = clone_subnet(net, branch, start_place, end_place)
     powl = __translate_petri_to_powl(subnet, subnet_start_place, subnet_end_place)
     return powl

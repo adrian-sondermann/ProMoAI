@@ -1,8 +1,15 @@
-from pm4py.objects.powl.obj import StrictPartialOrder, Transition, SilentTransition, POWL
-from typing import List as TList, Union
+from typing import List as TList
+from typing import Union
+
+from pm4py.objects.powl.obj import (
+    POWL,
+    SilentTransition,
+    StrictPartialOrder,
+    Transition,
+)
 
 
-def validate_partial_orders_with_missing_transitive_edges(powl: POWL):
+def validate_partial_orders_with_missing_transitive_edges(powl: POWL) -> None:
     if isinstance(powl, StrictPartialOrder):
         if not powl.order.is_irreflexive():
             raise Exception("The irreflexivity of the partial order is violated!")
@@ -16,8 +23,8 @@ def validate_partial_orders_with_missing_transitive_edges(powl: POWL):
 
 
 def validate_unique_transitions(powl: POWL) -> TList[Union[Transition, SilentTransition]]:
-    def _find_duplicates(lst):
-        counts = {}
+    def _find_duplicates(lst: TList[Union[Transition, SilentTransition]]) -> TList[Union[Transition, SilentTransition]]:
+        counts: dict = {}
         duplicates = []
         for item in lst:
             if item in counts:
@@ -28,12 +35,12 @@ def validate_unique_transitions(powl: POWL) -> TList[Union[Transition, SilentTra
                 counts[item] = 1
         return duplicates
 
-    def _collect_leaves(node: POWL):
+    def _collect_leaves(node: POWL) -> TList[Union[Transition, SilentTransition]]:
         if isinstance(node, Transition) or isinstance(node, SilentTransition):
             return [node]
 
         elif hasattr(node, 'children'):
-            leaves = []
+            leaves: list = []
             for child in node.children:
                 leaves = leaves + _collect_leaves(child)
             return leaves

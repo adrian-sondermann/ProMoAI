@@ -1,24 +1,29 @@
-from typing import Union, Set
+from typing import Generator, Set, Union
+
 from pm4py.objects.petri_net.obj import PetriNet
-from pm4py.objects.powl.obj import Transition, SilentTransition
 from pm4py.objects.petri_net.utils import petri_utils as pn_util
+from pm4py.objects.powl.obj import SilentTransition, Transition
 
 
-def id_generator():
+def id_generator() -> Generator[str, None, None]:
     count = 1
     while True:
         yield f"id{count}"
         count += 1
 
 
-def clone_place(net, place, node_map):
+def clone_place(
+    net: PetriNet, place: PetriNet.Place, node_map: dict
+) -> PetriNet.Place:
     cloned_place = PetriNet.Place(f"{place.name}_cloned")
     net.places.add(cloned_place)
     node_map[place] = cloned_place
     return cloned_place
 
 
-def clone_transition(net, transition, node_map):
+def clone_transition(
+    net: PetriNet, transition: PetriNet.Transition, node_map: dict
+) -> PetriNet.Transition:
     cloned_transition = PetriNet.Transition(f"{transition.name}_cloned", transition.label)
     net.transitions.add(cloned_transition)
     node_map[transition] = cloned_transition
@@ -26,9 +31,9 @@ def clone_transition(net, transition, node_map):
 
 
 def clone_subnet(net: PetriNet, subnet_transitions: Set[PetriNet.Transition],
-                 start_place: PetriNet.Place, end_place: PetriNet.Place):
+                 start_place: PetriNet.Place, end_place: PetriNet.Place) -> tuple:
     subnet_net = PetriNet(f"Subnet_{next(id_generator())}")
-    node_map = {}
+    node_map: dict = {}
 
     for node in subnet_transitions:
         clone_transition(subnet_net, node, node_map)
@@ -54,7 +59,9 @@ def clone_subnet(net: PetriNet, subnet_transitions: Set[PetriNet.Transition],
     return subnet_net, mapped_start_place, mapped_end_place
 
 
-def locally_identical(p1, p2, transitions):
+def locally_identical(
+    p1: PetriNet.Place, p2: PetriNet.Place, transitions: set[PetriNet.Transition]
+) -> bool:
     pre1 = pn_util.pre_set(p1) & transitions
     pre2 = pn_util.pre_set(p2) & transitions
     post1 = pn_util.post_set(p1) & transitions
@@ -62,10 +69,14 @@ def locally_identical(p1, p2, transitions):
     return pre1 == pre2 and post1 == post2
 
 
-def apply_partial_order_projection(net: PetriNet, subnet_transitions: Set[PetriNet.Transition],
-                                   start_places: Set[PetriNet.Place], end_places: Set[PetriNet.Place]):
+def apply_partial_order_projection(
+    net: PetriNet,
+    subnet_transitions: Set[PetriNet.Transition],
+    start_places: Set[PetriNet.Place],
+    end_places: Set[PetriNet.Place],
+) -> tuple[PetriNet, PetriNet.Place, PetriNet.Place]:
     subnet_net = PetriNet(f"Subnet_{next(id_generator())}")
-    node_map = {}
+    node_map: dict = {}
 
     for node in subnet_transitions:
         clone_transition(subnet_net, node, node_map)
@@ -112,7 +123,7 @@ def apply_partial_order_projection(net: PetriNet, subnet_transitions: Set[PetriN
 
 
 def add_arc_from_to(source: Union[PetriNet.Place, PetriNet.Transition],
-                    target: Union[PetriNet.Transition, PetriNet.Place], net: PetriNet):
+                    target: Union[PetriNet.Transition, PetriNet.Place], net: PetriNet) -> None:
     arc = PetriNet.Arc(source, target)
     net.arcs.add(arc)
     source.out_arcs.add(arc)

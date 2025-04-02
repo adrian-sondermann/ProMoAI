@@ -1,5 +1,6 @@
 from enum import Enum
-import streamlit as st
+
+import streamlit as st  # noqa: F401
 
 
 class InputType(Enum):

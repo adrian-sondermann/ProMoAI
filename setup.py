@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 # Read the requirements from the requirements.txt file
 with open('requirements.txt', encoding='utf-8') as f:
@@ -11,7 +12,7 @@ with open('README.md', encoding='utf-8') as f:
 
 
 # Get the version from __init__.py
-def get_version():
+def get_version() -> str:
     with open(os.path.join('promoai', '__init__.py'), 'r') as f:
         for line in f:
             if line.startswith('__version__'):

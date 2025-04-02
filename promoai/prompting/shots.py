@@ -9,6 +9,8 @@
 
 import pm4py
 from pm4py.objects.conversion.powl.variants.to_petri_net import apply as to_pn
+from pm4py.objects.powl.obj import POWL
+
 from promoai.model_generation import ModelGenerator
 
 d1 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
@@ -17,7 +19,7 @@ d1 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
      " execution of 'a' is performed. The whole process is optional and can be skipped."
 
 
-def m1():
+def m1() -> POWL:
     gen = ModelGenerator()
     a = gen.activity('a')
     b = gen.activity('b')
@@ -42,7 +44,7 @@ d1_2 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
        " either ends or goes back to 'a'."
 
 
-def m1_2():
+def m1_2() -> POWL:
     gen = ModelGenerator()
     a = gen.activity('a')
     b = gen.activity('b')
@@ -69,7 +71,7 @@ d2 = "inventory management can proceed through restocking items or fulfilling or
      "repeated or skipped based on operational requirements."
 
 
-def m2():
+def m2() -> POWL:
     gen = ModelGenerator()
     restock = gen.activity('restock items')
     loop_1 = gen.loop(do=restock, redo=None)
@@ -94,7 +96,7 @@ d3 = "This enhanced payroll process allows for a high degree of customization an
      "facilitates the issuance of payments and the generation of detailed reports. "
 
 
-def m3():
+def m3() -> POWL:
     gen = ModelGenerator()
     track_time = gen.activity('track time')
     activity_1_self_loop = gen.loop(do=track_time, redo=None)
@@ -117,7 +119,7 @@ d4 = "This system combines 4 parallel subprocesses, i.e., that are executed inde
      "constrains that I must precede J and H must precede I "
 
 
-def m4():
+def m4() -> POWL:
     gen = ModelGenerator()
 
     # subprocess 1
@@ -155,7 +157,7 @@ d5 = "A customer brings in a defective computer and the CRS checks the defect an
      "error is detected another arbitrary repair activity is executed , otherwise the repair is finished. "
 
 
-def m5():
+def m5() -> POWL:
     gen = ModelGenerator()
     defect_check = gen.activity('Check defect')
     cost_calculation = gen.activity('Calculate repair costs')
@@ -206,7 +208,7 @@ d6 = "A small company manufactures customized bicycles. Whenever the sales depar
      ", the sales department ships the bicycle to the customer and finishes the process instance . "
 
 
-def m6():
+def m6() -> POWL:
     gen = ModelGenerator()
     create_process = gen.activity('Create process instance')
     reject_order = gen.activity('Reject order')
@@ -252,7 +254,7 @@ d7 = "A and B can happen in any order (concurrent). C and D can happen in any or
      "precedes D"
 
 
-def m7():
+def m7() -> POWL:
     gen = ModelGenerator()
     a = gen.activity('A')
     b = gen.activity('B')

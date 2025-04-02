@@ -12,7 +12,7 @@ Please update the model to fix the error. Make sure" \
 STRICT_PROMPT = False
 
 
-def add_role():
+def add_role() -> str:
     res = "Your role: you are an expert in process modeling," \
           " familiar with common" \
           " process constructs such as exclusive choice, do-redo loops, and partial orders." \
@@ -30,7 +30,7 @@ def add_role():
     return res
 
 
-def add_knowledge():
+def add_knowledge() -> str:
     return "Use the following knowledge about the POWL process modeling language:\n" \
            "A POWL model is a hierarchical model. POWL models are recursively generated" \
            " by combining submodels into a new model either using an operator (xor or loop)" \
@@ -94,11 +94,11 @@ def add_knowledge():
            "twice (not really in a loop). \n\n"
 
 
-def add_process_description(process_description):
+def add_process_description(process_description: str) -> str:
     return "This is the process description: " + process_description
 
 
-def negative_prompting():
+def negative_prompting() -> str:
     return "Avoid common mistakes. " \
            "First, ensure that the transitive closure of the generated partial orders" \
            " do not violate irreflexivity. Verify that all optional/skippable and" \
@@ -122,12 +122,12 @@ def negative_prompting():
            "```\n\n"
 
 
-def code_generation():
+def code_generation() -> str:
     return "At the end of your response provide a single Python code snippet (i.e., staring with '```python') that" \
            " contains the full final code. \n\n"
 
 
-def add_few_shots():
+def add_few_shots() -> str:
     res = "Please use few-shots learning. These are few illustrating shots extended with common errors that you" \
           " should avoid for each example:\n"
     for i in range(len(SHOTS)):
@@ -144,7 +144,7 @@ def add_few_shots():
     return res + '\n'
 
 
-def create_model_generation_prompt(process_description: str) -> str:
+def create_model_generation_prompt(process_description: str | None) -> str:
     prompt = add_role()
     prompt = prompt + add_knowledge()
     prompt = prompt + negative_prompting()
@@ -157,13 +157,13 @@ def create_model_generation_prompt(process_description: str) -> str:
     return prompt
 
 
-def create_conversation(process_description: Optional[str]) -> List[dict[str:str]]:
+def create_conversation(process_description: Optional[str]) -> List[dict[str, str]]:
     prompt = create_model_generation_prompt(process_description)
     conversation = [{"role": "user", "content": f'{prompt}'}]
     return conversation
 
 
-def update_conversation(conversation: List[dict[str:str]], feedback: str) -> List[dict[str:str]]:
+def update_conversation(conversation: List[dict[str, str]], feedback: str) -> List[dict[str, str]]:
     update_prompt = "Please update the model to fix it based on the provided feedback. Please make sure the returned" \
                     " model matches the initial process description, all previously provided feedback, and the new" \
                     "feedback comment as well. Make sure to save the updated final model is the variable" \
@@ -172,7 +172,7 @@ def update_conversation(conversation: List[dict[str:str]], feedback: str) -> Lis
     return conversation
 
 
-def model_self_improvement_prompt():
+def model_self_improvement_prompt() -> str:
     return (
         "Thank you! The model was generated successfully! Could you further improve the model? "
         "Please critically evaluate the process model and improve it accordingly **only where genuinely beneficial**. "
@@ -184,7 +184,7 @@ def model_self_improvement_prompt():
     )
 
 
-def model_self_improvement_prompt_short():
+def model_self_improvement_prompt_short() -> str:
     return (
         "Thank you! The model was generated successfully! Could you further improve the model? "
         "Please critically evaluate the process model against the initial process description and improve it"
@@ -194,7 +194,7 @@ def model_self_improvement_prompt_short():
     )
 
 
-def description_self_improvement_prompt(descr: str):
+def description_self_improvement_prompt(descr: str) -> str:
     res = f"""
     You are provided with a process description. Your task is to optimize this description to make it richer and more
      detailed, while ensuring that all additions are relevant, accurate, and directly related to the original process.

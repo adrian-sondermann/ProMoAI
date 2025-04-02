@@ -1,28 +1,31 @@
 
-from pm4py import discover_powl, BPMN, convert_to_petri_net, PetriNet
-from promoai.model_generation.llm_model_generator import LLMProcessModelGenerator
+import pandas as pd
+from pm4py import BPMN, PetriNet, convert_to_petri_net, discover_powl
+from pm4py.algo.discovery.powl.inductive.variants.powl_discovery_varaints import (
+    POWLDiscoveryVariant,
+)
+from pm4py.objects.log.obj import EventLog
 
-
-
-
+from promoai.model_generation.llm_model_generator import (
+    LLMProcessModelGenerator,
+)
 from promoai.pn_to_powl.converter import convert_workflow_net_to_powl
-from pm4py.algo.discovery.powl.inductive.variants.powl_discovery_varaints import POWLDiscoveryVariant
 
 
-def generate_model_from_text(description:str, api_key:str, ai_model:str, ai_provider:str):
+def generate_model_from_text(description:str, api_key:str, ai_model:str, ai_provider:str) -> LLMProcessModelGenerator:
     return LLMProcessModelGenerator.from_description(description, api_key, ai_model, ai_provider)
 
 
-def generate_model_from_event_log(event_log):
+def generate_model_from_event_log(event_log: EventLog | pd.DataFrame) -> LLMProcessModelGenerator:
     powl_model = discover_powl(event_log, variant=POWLDiscoveryVariant.MAXIMAL)
     return LLMProcessModelGenerator.from_powl(powl_model=powl_model)
 
 
-def generate_model_from_petri_net(pn: PetriNet):
+def generate_model_from_petri_net(pn: PetriNet) -> LLMProcessModelGenerator:
     powl_model = convert_workflow_net_to_powl(pn)
     return LLMProcessModelGenerator.from_powl(powl_model=powl_model)
 
 
-def generate_model_from_bpmn(bpmn_diagram:BPMN):
+def generate_model_from_bpmn(bpmn_diagram: BPMN) -> LLMProcessModelGenerator:
     pn, im, fm = convert_to_petri_net(bpmn_diagram)
     return generate_model_from_petri_net(pn)

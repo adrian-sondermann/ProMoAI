@@ -1,22 +1,28 @@
 import traceback
+from typing import Any, Callable, Dict, List, Tuple, TypeVar
+
 import requests
-from typing import Callable, List, TypeVar, Any
-from promoai.general_utils.ai_providers import AIProviders
-from promoai.prompting.prompt_engineering import ERROR_MESSAGE_FOR_MODEL_GENERATION
+from pm4py.objects.powl.obj import POWL
+
 from promoai.general_utils import constants
+from promoai.general_utils.ai_providers import AIProviders
+from promoai.general_utils.config import config
+from promoai.prompting.prompt_engineering import (
+    ERROR_MESSAGE_FOR_MODEL_GENERATION,
+)
 
 T = TypeVar('T')
 
 
-def generate_result_with_error_handling(conversation: List[dict[str:str]],
-                                        extraction_function: Callable[[str, Any], T],
+def generate_result_with_error_handling(conversation: List[Dict[str, str]],
+                                        extraction_function: Callable[[str, bool], Tuple[str, POWL]],
                                         api_key: str,
                                         llm_name: str,
                                         ai_provider: str,
-                                        max_iterations=5,
-                                        additional_iterations=5,
-                                        standard_error_message=ERROR_MESSAGE_FOR_MODEL_GENERATION) \
-        -> tuple[str, any, list[Any]]:
+                                        max_iterations: int = 5,
+                                        additional_iterations: int = 5,
+                                        standard_error_message: str = ERROR_MESSAGE_FOR_MODEL_GENERATION) \
+        -> Tuple[str, POWL, List[Dict[str, str]]]:
     error_history = []
     for iteration in range(max_iterations + additional_iterations):
         if ai_provider == AIProviders.AZUREOPENAI.value:
@@ -51,9 +57,10 @@ def generate_result_with_error_handling(conversation: List[dict[str:str]],
             error_history.append(error_description)
             if constants.ENABLE_PRINTS:
                 print(f"Error detected in iteration {str(iteration + 1)}: {traceback.format_exc()}")
-                print("Error detected in iteration " + str(iteration + 1))
-            new_message = f"Executing your code led to an error! " + standard_error_message + "This is the error" \
-                                                                                              f" message: {error_description}"
+            new_message = (
+                "Executing your code led to an error! " + standard_error_message + "This is the error"
+                f" message: {error_description}"
+            )
             conversation.append({"role": "user", "content": new_message})
 
     raise Exception(llm_name + " failed to fix the errors after " + str(max_iterations + 5) +
@@ -68,7 +75,13 @@ def print_conversation(conversation: List[Dict[str, str]], start: int = 0) -> No
         print("\n\n")
 
 
-def generate_response_with_history(conversation_history, api_key, llm_name, api_url, use_responses_api=False) -> str:
+def generate_response_with_history(
+    conversation_history: List[Dict[str, str]],
+    api_key: str,
+    llm_name: str,
+    api_url: str,
+    use_responses_api: bool = False,
+) -> str:
     """
     Generates a response from the LLM using the conversation history.
 
@@ -108,7 +121,7 @@ def generate_response_with_history(conversation_history, api_key, llm_name, api_
 
         messages_payload.append(processed_message)
 
-    payload = {"model": llm_name}
+    payload: Dict[str, Any] = {"model": llm_name}
     if use_responses_api:
         payload["input"] = messages_payload
     else:
@@ -131,7 +144,7 @@ def generate_response_with_history(conversation_history, api_key, llm_name, api_
             return response["output"][-1]["content"][0]["text"]
         else:
             return response["choices"][0]["message"]["content"]
-    except Exception as e:
+    except Exception:
         raise Exception("Connection failed! This is the response: " + str(response))
 
 
@@ -176,6 +189,9 @@ def generate_response_with_history_portal_api(conversation_history: List[Dict[st
     raise Exception("LangChain AI Portal API request failed: Not yet implemented")
 
 
+def generate_response_with_history_google(
+    conversation_history: List[Dict[str, str]], api_key: str, google_model: str
+) -> str:
     """
     Generates a response from the LLM using the conversation history.
 
@@ -191,11 +207,11 @@ def generate_response_with_history_portal_api(conversation_history: List[Dict[st
     response = model.generate_content(str(conversation_history))
     try:
         return response.text
-    except Exception as e:
+    except Exception:
         raise Exception("Connection failed! This is the response: " + str(response))
 
 
-def generate_response_with_history_anthropic(conversation, api_key, llm_name):
+def generate_response_with_history_anthropic(conversation: List[Dict[str, str]], api_key: str, llm_name: str) -> str:
     import anthropic
 
     client = anthropic.Anthropic(

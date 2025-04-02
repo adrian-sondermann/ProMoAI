@@ -1,6 +1,9 @@
 from typing import Dict, List
 
-from promoai.model_generation.code_extraction import extract_final_python_code, execute_code_and_get_variable
+from promoai.model_generation.code_extraction import (
+    execute_code_and_get_variable,
+    extract_final_python_code,
+)
 
 
 def extraction_function_dictionary(response: str, keys: List[str]) -> tuple[str, Dict]:

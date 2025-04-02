@@ -1,10 +1,16 @@
-from pm4py.objects.powl.obj import StrictPartialOrder, OperatorPOWL, Transition, SilentTransition
+from pm4py.objects.powl.obj import (
+    POWL,
+    OperatorPOWL,
+    SilentTransition,
+    StrictPartialOrder,
+    Transition,
+)
 from pm4py.objects.process_tree.obj import Operator
 
 from promoai.prompting.prompt_engineering import import_statement
 
 
-def translate_powl_to_code(powl_obj):
+def translate_powl_to_code(powl_obj: POWL) -> str:
     """
     Translates a POWL object from pm4py into code using ModelGenerator.
 
@@ -18,12 +24,12 @@ def translate_powl_to_code(powl_obj):
 
     var_counter = [0]
 
-    def get_new_var_name():
+    def get_new_var_name() -> str:
         var_name = f"var_{var_counter[0]}"
         var_counter[0] += 1
         return var_name
 
-    def process_powl(powl):
+    def process_powl(powl: POWL) -> str:
         if isinstance(powl, Transition):
             var_name = get_new_var_name()
             if isinstance(powl, SilentTransition):

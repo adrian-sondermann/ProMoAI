@@ -1,8 +1,10 @@
 import re
+import sys
 import traceback
+from typing import Any, Mapping
 
 
-def extract_final_python_code(response_text):
+def extract_final_python_code(response_text: str) -> str:
     python_code_pattern = r"```python(.*?)```"
     allowed_import_path = "promoai.model_generation.generator"
     allowed_import_class = "ModelGenerator"
@@ -29,9 +31,9 @@ def extract_final_python_code(response_text):
         raise Exception("No Python code snippet found!")
 
 
-def execute_code_and_get_variable(code, variable_name):
+def execute_code_and_get_variable(code: str, variable_name: str) -> Any:
     try:
-        local_vars = {}
+        local_vars: Mapping[str, Any] = {}
         exec(code, globals(), local_vars)
         try:
             value = local_vars[variable_name]
@@ -39,7 +41,8 @@ def execute_code_and_get_variable(code, variable_name):
             raise ValueError(f"Variable '{variable_name}' not found!")
         return value
     except Exception:
-        exc_type, exc_value, exc_traceback = traceback.sys.exc_info()
+        # exc_type, exc_value, exc_traceback = traceback.sys.exc_info()
+        exc_type, exc_value, exc_traceback = sys.exc_info()
         error_msg = traceback.format_exception_only(exc_type, exc_value)[-1].strip()
 
         line_number, error_line = None, "Error line not directly available."
@@ -49,13 +52,17 @@ def execute_code_and_get_variable(code, variable_name):
             if frame.filename == filename:
                 line_number = frame.lineno
                 try:
-                    error_line = code.split('\n')[line_number - 1]
+                    # error_line = code.split('\n')[line_number - 1]
+                    if line_number is not None:
+                        error_line = code.split('\n')[line_number - 1]
+                    else:
+                        error_line = "Line number is NoneType."
                 except IndexError:
                     error_line = "Line number out of range."
                 break
 
         if line_number:
-            error_details = f"Error occurred at line {line_number}: \"{error_line}\" with message: {error_msg}"
+            error_details = f'Error occurred at line {line_number}: "{error_line}" with message: {error_msg}'
         else:
             error_details = f"Error occurred with message: {error_msg}. \n The error occurred with trying to execute " \
                             f"the following extracted code: {code}. "

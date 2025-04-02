@@ -9,6 +9,8 @@
 
 import pm4py
 from pm4py.objects.conversion.powl.variants.to_petri_net import apply as to_pn
+from pm4py.objects.powl.obj import POWL
+
 from promoai.model_generation import ModelGenerator
 
 d1 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
@@ -16,10 +18,10 @@ d1 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
      " execution of 'a' is performed. The whole process is optional and can be skipped."
 
 
-def m1():
+def m1() -> POWL:
     gen = ModelGenerator()
 
-    def model_over_all_activities():
+    def model_over_all_activities() -> POWL:
         child1 = model_a_b()
         child2 = model_c()
         child3 = model_d()
@@ -27,23 +29,23 @@ def m1():
         order = gen.partial_order(dependencies=[(child1, child2), (child2, child3), (child3, child4)])
         return gen.xor(order, None)
 
-    def model_a_b():
+    def model_a_b() -> POWL:
         return gen.xor(model_a(), model_b())
 
-    def model_a():
+    def model_a() -> POWL:
         a = gen.activity('a')
         return gen.loop(do=a, redo=None)
 
-    def model_b():
+    def model_b() -> POWL:
         return gen.activity('b')
 
-    def model_c():
+    def model_c() -> POWL:
         return gen.activity('c')
 
-    def model_d():
+    def model_d() -> POWL:
         return gen.activity('d')
 
-    def model_second_a():
+    def model_second_a() -> POWL:
         return gen.activity('a')
 
     final_model = model_over_all_activities()
@@ -59,30 +61,30 @@ d1_2 = "in this process, you can either do 'a' or 'b'. If 'a' is selected," \
        " either ends or goes back to 'a'."
 
 
-def m1_2():
+def m1_2() -> POWL:
     gen = ModelGenerator()
 
-    def model_over_all_activities():
+    def model_over_all_activities() -> POWL:
         child1 = model_a_b()
         child2 = model_c()
         child3 = model_d()
         order = gen.partial_order(dependencies=[(child1, child2), (child2, child3)])
         return gen.loop(do=order, redo=None)
 
-    def model_a_b():
+    def model_a_b() -> POWL:
         return gen.xor(model_a(), model_b())
 
-    def model_a():
+    def model_a() -> POWL:
         a = gen.activity('a')
         return gen.loop(do=a, redo=None)
 
-    def model_b():
+    def model_b() -> POWL:
         return gen.activity('b')
 
-    def model_c():
+    def model_c() -> POWL:
         return gen.activity('c')
 
-    def model_d():
+    def model_d() -> POWL:
         return gen.activity('d')
 
     final_model = model_over_all_activities()
@@ -99,7 +101,7 @@ d2 = "inventory management can proceed through restocking items or fulfilling or
      "repeated or skipped based on operational requirements. "
 
 
-def m2():
+def m2() -> POWL:
     gen = ModelGenerator()
     restock = gen.activity('restock items')
     loop_1 = gen.loop(do=restock, redo=None)
@@ -123,7 +125,7 @@ d3 = "This enhanced payroll process allows for a high degree of customization an
      "facilitates the issuance of payments and the generation of detailed reports. "
 
 
-def m3():
+def m3() -> POWL:
     gen = ModelGenerator()
     track_time = gen.activity('track time')
     activity_1_self_loop = gen.loop(do=track_time, redo=None)
@@ -145,7 +147,7 @@ d4 = "This system combines 4 parallel subprocesses, i.e., that are executed inde
      "constrains that I must precede J and H must precede I "
 
 
-def m4():
+def m4() -> POWL:
     gen = ModelGenerator()
 
     # subprocess 1
@@ -182,7 +184,7 @@ d5 = "A customer brings in a defective computer and the CRS checks the defect an
      "error is detected another arbitrary repair activity is executed , otherwise the repair is finished. "
 
 
-def m5():
+def m5() -> POWL:
     gen = ModelGenerator()
     defect_check = gen.activity('Check defect')
     cost_calculation = gen.activity('Calculate repair costs')
@@ -232,28 +234,28 @@ d6 = "A small company manufactures customized bicycles. Whenever the sales depar
      ", the sales department ships the bicycle to the customer and finishes the process instance . "
 
 
-def m6():
+def m6() -> POWL:
     gen = ModelGenerator()
 
-    def model_over_all_activities():
+    def model_over_all_activities() -> POWL:
         child1 = create_process()
         child2 = choice_accept_reject()
         child3 = finish_process()
         return gen.partial_order(dependencies=[(child1, child2), (child2, child3)])
 
-    def create_process():
+    def create_process() -> POWL:
         return gen.activity('Create process instance')
 
-    def choice_accept_reject():
+    def choice_accept_reject() -> POWL:
         return gen.xor(accept_case(), reject_case())
 
-    def finish_process():
+    def finish_process() -> POWL:
         return gen.activity('Finish process instance')
 
-    def reject_case():
+    def reject_case() -> POWL:
         return gen.activity('Reject order')
 
-    def accept_case():
+    def accept_case() -> POWL:
         accept_order = gen.activity('Accept order')
         inform = gen.activity('Inform storehouse and engineering department')
         process_part_list = gen.activity('Process part list')
@@ -266,13 +268,13 @@ def m6():
                                                (part_loop, assemble_bicycle), (prepare_assembly, assemble_bicycle),
                                                (assemble_bicycle, ship_bicycle)])
 
-    def create_part_loop():
+    def create_part_loop() -> POWL:
         check_part = gen.activity('Check required quantity of the part')
         check_reserve = create_check_reserve_choice()
         single_part = gen.partial_order(dependencies=[(check_part, check_reserve)])
         return gen.loop(do=single_part, redo=None)
 
-    def create_check_reserve_choice():
+    def create_check_reserve_choice() -> POWL:
         reserve = gen.activity('Reserve part')
         back_order = gen.activity('Back-order part')
         return gen.xor(reserve, back_order)
@@ -296,26 +298,26 @@ d7 = "A and B can happen in any order (concurrent). C and D can happen in any or
      "precedes D"
 
 
-def m7():
+def m7() -> POWL:
     gen = ModelGenerator()
 
-    def model_over_all_activities():
+    def model_over_all_activities() -> POWL:
         a = model_a()
         b = model_b()
         c = model_c()
         d = model_d()
         return gen.partial_order(dependencies=[(a, c), (a, d), (b, d)])
 
-    def model_a():
+    def model_a() -> POWL:
         return gen.activity('a')
 
-    def model_b():
+    def model_b() -> POWL:
         return gen.activity('b')
 
-    def model_c():
+    def model_c() -> POWL:
         return gen.activity('c')
 
-    def model_d():
+    def model_d() -> POWL:
         return gen.activity('d')
 
     final_model = model_over_all_activities()

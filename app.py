@@ -1,28 +1,46 @@
 import os
 import shutil
 import subprocess
-import streamlit as st
 import tempfile
 
-import promoai
-from promoai.general_utils.app_utils import InputType, ViewType, DISCOVERY_HELP
-from promoai.general_utils.ai_providers import AI_MODEL_DEFAULTS, AI_HELP_DEFAULTS, MAIN_HELP, \
-    DEFAULT_AI_PROVIDER
-from pm4py import read_xes, read_pnml, read_bpmn, convert_to_petri_net, convert_to_bpmn
-from pm4py.util import constants
-from pm4py.objects.petri_net.exporter.variants.pnml import export_petri_as_string
-from pm4py.visualization.petri_net import visualizer as pn_visualizer
-from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
-from pm4py.objects.bpmn.layout import layouter as bpmn_layouter
+import pandas as pd
+import streamlit as st
+from pm4py import (
+    convert_to_bpmn,
+    convert_to_petri_net,
+    read_bpmn,
+    read_pnml,
+    read_xes,
+)
 from pm4py.objects.bpmn.exporter.variants.etree import get_xml_string
+from pm4py.objects.bpmn.layout import layouter as bpmn_layouter
+from pm4py.objects.log.obj import EventLog
+from pm4py.objects.petri_net.exporter.variants.pnml import (
+    export_petri_as_string,
+)
+from pm4py.util import constants
+from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
+from pm4py.visualization.petri_net import visualizer as pn_visualizer
 
+import promoai
+from promoai import config
+from promoai.general_utils.ai_providers import (
+    AI_HELP_DEFAULTS,
+    AI_MODEL_DEFAULTS,
+    DEFAULT_AI_PROVIDER,
+    MAIN_HELP,
+)
+from promoai.general_utils.app_utils import DISCOVERY_HELP, InputType, ViewType
 
+print(config.logging)
+print(config.portal_api)
+print(config.azure_openai)
 
-def run_model_generator_app():
+def run_model_generator_app() -> None:
     subprocess.run(['streamlit', 'run', __file__])
 
 
-def run_app():
+def run_app() -> None:
     st.title('🤖 ProMoAI')
 
     st.subheader(
@@ -37,7 +55,7 @@ def run_app():
     if 'model_name' not in st.session_state:
         st.session_state['model_name'] = AI_MODEL_DEFAULTS[st.session_state['provider']]
 
-    def update_model_name():
+    def update_model_name() -> None:
         st.session_state['model_name'] = AI_MODEL_DEFAULTS[st.session_state['provider']]
 
     with st.expander("🔧 Configuration", expanded=False):
@@ -56,17 +74,22 @@ def run_app():
 
         col1, col2 = st.columns(2)
         with col1:
-            ai_model_name = st.text_input("Enter the AI model name:",
-                                          key='model_name',
-                                          help=AI_HELP_DEFAULTS[st.session_state['provider']])
+            ai_model_name = st.text_input(
+                "Enter the AI model name:",
+                key='model_name',
+                help=AI_HELP_DEFAULTS[st.session_state['provider']],
+            )
         with col2:
             api_key = st.text_input("API key:", type="password")
 
     if 'selected_mode' not in st.session_state:
         st.session_state['selected_mode'] = "Model Generation"
 
-    input_type = st.radio("Select Input Type:",
-                          options=[InputType.TEXT.value, InputType.MODEL.value, InputType.DATA.value], horizontal=True)
+    input_type = st.radio(
+        "Select Input Type:",
+        options=[InputType.TEXT.value, InputType.MODEL.value, InputType.DATA.value],
+        horizontal=True,
+    )
 
     if input_type != st.session_state['selected_mode']:
         st.session_state['selected_mode'] = input_type
@@ -115,7 +138,7 @@ def run_app():
                     with tempfile.NamedTemporaryFile(mode="wb", delete=False,
                                                      dir=temp_dir, suffix=uploaded_log.name) as temp_file:
                         temp_file.write(contents)
-                        log = read_xes(temp_file.name, variant="rustxes")
+                        log: EventLog | pd.DataFrame = read_xes(temp_file.name, variant="rustxes")
                     shutil.rmtree(temp_dir, ignore_errors=True)
 
                     process_model = promoai.generate_model_from_event_log(log)
@@ -170,7 +193,7 @@ def run_app():
 
                         st.session_state['model_gen'] = process_model
                         st.session_state['feedback'] = []
-                    except Exception as e:
+                    except Exception:
                         if os.path.exists(temp_dir):
                             shutil.rmtree(temp_dir, ignore_errors=True)
                         st.error(body="Please upload a semi-block-structured model!", icon="⚠️")

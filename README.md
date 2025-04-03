@@ -108,6 +108,7 @@ poetry config virtualenvs.in-project true
 poetry lock
 poetry install
 poetry install --with dev
+# prints the activate command of the python .venv. Afterwards, execute the displayed command manually 
 poetry env activate
 ```
 

@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pm4py import BPMN, PetriNet, convert_to_petri_net, discover_powl
 from pm4py.algo.discovery.powl.inductive.variants.powl_discovery_varaints import (

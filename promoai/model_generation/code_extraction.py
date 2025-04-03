@@ -1,7 +1,8 @@
 import re
 import sys
 import traceback
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 
 def extract_final_python_code(response_text: str) -> str:

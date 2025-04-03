@@ -1,5 +1,3 @@
-from typing import Dict, List, Set, Tuple
-
 from pm4py import PetriNet
 from pm4py.objects.powl.BinaryRelation import BinaryRelation
 from pm4py.objects.powl.obj import (
@@ -100,16 +98,16 @@ def __validate_partial_order(po: StrictPartialOrder) -> StrictPartialOrder:
 
 
 def __translate_partial_order(
-    net: PetriNet, transition_groups: List[Set[PetriNet.Transition]], i_place: PetriNet.Place, f_place: PetriNet.Place
+    net: PetriNet, transition_groups: list[set[PetriNet.Transition]], i_place: PetriNet.Place, f_place: PetriNet.Place
 ) -> StrictPartialOrder:
 
-    groups: List[Tuple[PetriNet.Transition, ...]] = [tuple(g) for g in transition_groups]
-    transition_to_group_map: Dict[PetriNet.Transition, Tuple[PetriNet.Transition, ...]] = {
+    groups: list[tuple[PetriNet.Transition, ...]] = [tuple(g) for g in transition_groups]
+    transition_to_group_map: dict[PetriNet.Transition, tuple[PetriNet.Transition, ...]] = {
         transition: g for g in groups for transition in g
     }
 
-    group_start_places: Dict[Tuple[PetriNet.Transition, ...], Set] = {g: set() for g in groups}
-    group_end_places: Dict[Tuple[PetriNet.Transition, ...], Set] = {g: set() for g in groups}
+    group_start_places: dict[tuple[PetriNet.Transition, ...], set] = {g: set() for g in groups}
+    group_end_places: dict[tuple[PetriNet.Transition, ...], set] = {g: set() for g in groups}
     temp_po = BinaryRelation(groups)
 
     p: PetriNet.Place

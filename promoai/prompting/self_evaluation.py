@@ -1,17 +1,15 @@
-from typing import Dict, List
-
 from promoai.model_generation.code_extraction import (
     execute_code_and_get_variable,
     extract_final_python_code,
 )
 
 
-def extraction_function_dictionary(response: str, keys: List[str]) -> tuple[str, Dict]:
+def extraction_function_dictionary(response: str, keys: list[str]) -> tuple[str, dict]:
     extracted_code = extract_final_python_code(response)
     print(extracted_code)
     variable_name = 'score_dictionary'
     score_dict = execute_code_and_get_variable(extracted_code, variable_name)
-    if not isinstance(score_dict, Dict):
+    if not isinstance(score_dict, dict):
         raise Exception(f"Not a dictionary! Found: {score_dict}!")
     if list(score_dict.keys()) == keys:
         return extracted_code, score_dict
@@ -19,7 +17,7 @@ def extraction_function_dictionary(response: str, keys: List[str]) -> tuple[str,
         raise Exception(f"Wrong keys in the extracted dictionary! Expected: {keys}; found: {score_dict.keys()}!")
 
 
-def generate_self_evaluation_prompt(description: str, model_codes: Dict[str, str],
+def generate_self_evaluation_prompt(description: str, model_codes: dict[str, str],
                                     conformance_evaluation: bool = False) -> str:
     """
     Generates a prompt for the LLM to evaluate multiple models based on a process description.
@@ -34,10 +32,10 @@ def generate_self_evaluation_prompt(description: str, model_codes: Dict[str, str
         str: The formatted prompt to be sent to the LLM.
     """
     prompt = """You have already generated 4 candidate POWL models for a single process descriptions
-     following the previously detailed task. Now, let's forget about the process modeling role and take the role of 
+     following the previously detailed task. Now, let's forget about the process modeling role and take the role of
      an assistant specialized in evaluating the already generated process models.
      Your task is to assess the quality of the provided POWL models based on how well they capture the behavior
-      described in the process description.\n\n"""
+     described in the process description.\n\n"""
     prompt = prompt + f"""This was the process description: {description}\n\n"""
     prompt = prompt + f"""The generated POWL models are saved in the following dictionary:: {model_codes}\n\n"""
 

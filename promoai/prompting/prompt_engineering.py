@@ -1,5 +1,5 @@
 import inspect
-from typing import List, Optional
+from typing import Optional
 
 from promoai.prompting.shots import SHOTS
 
@@ -157,13 +157,13 @@ def create_model_generation_prompt(process_description: str | None) -> str:
     return prompt
 
 
-def create_conversation(process_description: Optional[str]) -> List[dict[str, str]]:
+def create_conversation(process_description: Optional[str]) -> list[dict[str, str]]:
     prompt = create_model_generation_prompt(process_description)
     conversation = [{"role": "user", "content": f'{prompt}'}]
     return conversation
 
 
-def update_conversation(conversation: List[dict[str, str]], feedback: str) -> List[dict[str, str]]:
+def update_conversation(conversation: list[dict[str, str]], feedback: str) -> list[dict[str, str]]:
     update_prompt = "Please update the model to fix it based on the provided feedback. Please make sure the returned" \
                     " model matches the initial process description, all previously provided feedback, and the new" \
                     "feedback comment as well. Make sure to save the updated final model is the variable" \
@@ -203,8 +203,8 @@ def description_self_improvement_prompt(descr: str) -> str:
     res = res + f"""Possible areas for enhancement include:\n
     - **Detail Enhancement:** Add specific details that are missing but crucial for understanding the process flow. \n
     - **Clarity Improvement:** Clarify any ambiguous or vague statements to ensure that the description is clear and understandable.\n
-    - **Explicit Process Constructs:** Rephrase parts of the description to explicitly incorporate constructs. 
-    For example, change 'X happens in most cases' to 'there is an exclusive choice between performing X or
+    - **Explicit Process Constructs:** Rephrase parts of the description to explicitly incorporate constructs.
+     For example, change 'X happens in most cases' to 'there is an exclusive choice between performing X or
      skipping it'.\n
 
     Please answer by only returning the improved process description without any additional text in your response. Do

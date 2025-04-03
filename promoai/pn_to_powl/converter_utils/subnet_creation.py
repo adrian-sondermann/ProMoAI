@@ -1,4 +1,5 @@
-from typing import Generator, Set, Union
+from collections.abc import Generator
+from typing import Union
 
 from pm4py.objects.petri_net.obj import PetriNet
 from pm4py.objects.petri_net.utils import petri_utils as pn_util
@@ -30,7 +31,7 @@ def clone_transition(
     return cloned_transition
 
 
-def clone_subnet(net: PetriNet, subnet_transitions: Set[PetriNet.Transition],
+def clone_subnet(net: PetriNet, subnet_transitions: set[PetriNet.Transition],
                  start_place: PetriNet.Place, end_place: PetriNet.Place) -> tuple:
     subnet_net = PetriNet(f"Subnet_{next(id_generator())}")
     node_map: dict = {}
@@ -71,9 +72,9 @@ def locally_identical(
 
 def apply_partial_order_projection(
     net: PetriNet,
-    subnet_transitions: Set[PetriNet.Transition],
-    start_places: Set[PetriNet.Place],
-    end_places: Set[PetriNet.Place],
+    subnet_transitions: set[PetriNet.Transition],
+    start_places: set[PetriNet.Place],
+    end_places: set[PetriNet.Place],
 ) -> tuple[PetriNet, PetriNet.Place, PetriNet.Place]:
     subnet_net = PetriNet(f"Subnet_{next(id_generator())}")
     node_map: dict = {}

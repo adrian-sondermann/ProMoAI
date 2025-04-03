@@ -1,5 +1,5 @@
 import traceback
-from typing import Any, Callable, Dict, List, Tuple, TypeVar
+from typing import Any, Callable, TypeVar
 
 import requests
 from pm4py.objects.powl.obj import POWL
@@ -14,15 +14,15 @@ from promoai.prompting.prompt_engineering import (
 T = TypeVar('T')
 
 
-def generate_result_with_error_handling(conversation: List[Dict[str, str]],
-                                        extraction_function: Callable[[str, bool], Tuple[str, POWL]],
+def generate_result_with_error_handling(conversation: list[dict[str, str]],
+                                        extraction_function: Callable[[str, bool], tuple[str, POWL]],
                                         api_key: str,
                                         llm_name: str,
                                         ai_provider: str,
                                         max_iterations: int = 5,
                                         additional_iterations: int = 5,
                                         standard_error_message: str = ERROR_MESSAGE_FOR_MODEL_GENERATION) \
-        -> Tuple[str, POWL, List[Dict[str, str]]]:
+        -> tuple[str, POWL, list[dict[str, str]]]:
     error_history = []
     for iteration in range(max_iterations + additional_iterations):
         if ai_provider == AIProviders.AZUREOPENAI.value:
@@ -46,7 +46,8 @@ def generate_result_with_error_handling(conversation: List[Dict[str, str]],
                 raise Exception(f"AI provider {ai_provider} is not supported!")
             response = generate_response_with_history(conversation, api_key, llm_name, api_url,
                                                       use_responses_api=use_responses_api)
-        print_conversation(conversation, start=len(conversation)-2)
+        # print last two messages
+        print_conversation(conversation[-2:], start=max(0, len(conversation)-2))
         try:
             conversation.append({"role": "assistant", "content": response})
             auto_duplicate = iteration >= max_iterations
@@ -67,7 +68,7 @@ def generate_result_with_error_handling(conversation: List[Dict[str, str]],
                     " iterations! This is the error history: " + str(error_history))
 
 
-def print_conversation(conversation: List[Dict[str, str]], start: int = 0) -> None:
+def print_conversation(conversation: list[dict[str, str]], start: int = 0) -> None:
     if constants.ENABLE_PRINTS:
         print("\n\n")
         for index, msg in enumerate(conversation, start=start):
@@ -76,7 +77,7 @@ def print_conversation(conversation: List[Dict[str, str]], start: int = 0) -> No
 
 
 def generate_response_with_history(
-    conversation_history: List[Dict[str, str]],
+    conversation_history: list[dict[str, str]],
     api_key: str,
     llm_name: str,
     api_url: str,
@@ -121,7 +122,7 @@ def generate_response_with_history(
 
         messages_payload.append(processed_message)
 
-    payload: Dict[str, Any] = {"model": llm_name}
+    payload: dict[str, Any] = {"model": llm_name}
     if use_responses_api:
         payload["input"] = messages_payload
     else:
@@ -148,7 +149,7 @@ def generate_response_with_history(
         raise Exception("Connection failed! This is the response: " + str(response))
 
 
-def generate_response_with_history_azure_openai(conversation_history: List[Dict[str, str]]) -> str:
+def generate_response_with_history_azure_openai(conversation_history: list[dict[str, str]]) -> str:
     # base_url = os.getenv("AZURE_OPENAI_BASE_URL")
     # model_name = os.getenv("AZURE_OPENAI_MODEL_NAME", "gpt-4o")
     # model_version = os.getenv("AZURE_OPENAI_MODEL_VERSION")
@@ -179,7 +180,7 @@ def generate_response_with_history_azure_openai(conversation_history: List[Dict[
         raise Exception(f"Azure OpenAI request failed: {e}")
 
 
-def generate_response_with_history_portal_api(conversation_history: List[Dict[str, str]]) -> str:
+def generate_response_with_history_portal_api(conversation_history: list[dict[str, str]]) -> str:
     # host = config.portal_api.host
     # port = config.portal_api.port
     # sdk_api_key = config.portal_api.sdk_api_key
@@ -190,7 +191,7 @@ def generate_response_with_history_portal_api(conversation_history: List[Dict[st
 
 
 def generate_response_with_history_google(
-    conversation_history: List[Dict[str, str]], api_key: str, google_model: str
+    conversation_history: list[dict[str, str]], api_key: str, google_model: str
 ) -> str:
     """
     Generates a response from the LLM using the conversation history.
@@ -211,7 +212,7 @@ def generate_response_with_history_google(
         raise Exception("Connection failed! This is the response: " + str(response))
 
 
-def generate_response_with_history_anthropic(conversation: List[Dict[str, str]], api_key: str, llm_name: str) -> str:
+def generate_response_with_history_anthropic(conversation: list[dict[str, str]], api_key: str, llm_name: str) -> str:
     import anthropic
 
     client = anthropic.Anthropic(
@@ -220,9 +221,9 @@ def generate_response_with_history_anthropic(conversation: List[Dict[str, str]],
     message = client.messages.create(
         model=llm_name,
         max_tokens=8192,
-        messages=conversation  # type: ignore[arg-type]
+        messages=conversation  # type: ignore[arg-type, unused-ignore]
     )
     try:
-        return message.content[0].text  # type: ignore[union-attr]
+        return message.content[0].text  # type: ignore[union-attr, unused-ignore]
     except Exception:
         raise Exception("Connection failed! This is the response: " + str(message))

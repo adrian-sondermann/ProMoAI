@@ -20,13 +20,13 @@ dependencies = [
     "rustxes (>=0.2.9,<0.3.0)",
     "setuptools (>=78.1.0,<79.0.0)",
     "streamlit (>=1.44.0,<2.0.0)",
+    "types-requests (>=2.32.0,<3.0.0.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
 pre-commit = "^4.2.0"
 ruff = "^0.11.2"
-types-requests = "^2.32"
 
 
 [tool.ruff]

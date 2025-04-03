@@ -23,7 +23,6 @@ from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from pm4py.visualization.petri_net import visualizer as pn_visualizer
 
 import promoai
-from promoai import config
 from promoai.general_utils.ai_providers import (
     AI_HELP_DEFAULTS,
     AI_MODEL_DEFAULTS,
@@ -32,9 +31,6 @@ from promoai.general_utils.ai_providers import (
 )
 from promoai.general_utils.app_utils import DISCOVERY_HELP, InputType, ViewType
 
-print(config.logging)
-print(config.portal_api)
-print(config.azure_openai)
 
 def run_model_generator_app() -> None:
     subprocess.run(['streamlit', 'run', __file__])
@@ -256,7 +252,7 @@ def run_app() -> None:
 
             view_option = st.selectbox("Select a view:", [v_type.value for v_type in ViewType])
 
-            image_format = str("svg").lower()
+            image_format = "svg".lower()
             if view_option == ViewType.POWL.value:
                 from pm4py.visualization.powl import visualizer
                 vis_str = visualizer.apply(powl,

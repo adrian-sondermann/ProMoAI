@@ -7,10 +7,12 @@
     2. [LLM Connection](#llm-connection)
     3. [Packages](#packages)
 4. [Conventions](#conventions)
+    1. [Pre-Commit Hooks](#pre-commit-hooks)
+    2. [Linting and Formatting](#linting-and-formatting)
 
 # GPT4Gov-ProMoAI
 
-GPT4Gov-ProMoAI is a fork of [ProMoAI](https://github.com/humam-kourani/ProMoAI). 
+GPT4Gov-ProMoAI is a fork of [ProMoAI](https://github.com/humam-kourani/ProMoAI).
 
 ## ProMoAI
 
@@ -30,7 +32,7 @@ ProMoAI is a Streamlit app that leverages Large Language Models (currently OpenA
 │   │
 │   ├── general_utils       <- Utility functions and helpers used across the project.
 │   │   └── config.py           <- Pydantic configuration classes utilizing .env file.
-│   │   └── llm_connection.py   <- Iterative inference utilizing LLMs. 
+│   │   └── llm_connection.py   <- Iterative inference utilizing LLMs.
 │   │
 │   ├── model_generation    <- Generating and validating process models from various descriptions.
 │   │   ├── code_extraction.py  <- Extracting and executing python code from LLM response.
@@ -39,9 +41,9 @@ ProMoAI is a Streamlit app that leverages Large Language Models (currently OpenA
 │   ├── pn_to_powl          <- Converting Petri Nets to Partially Ordered Workflow Language (POWL).
 │   │                           Not used for model generation from text description. Only used when
 │   │                           process models are generated from existing BPMN, Petri net files,
-│   │                           or from an event log. 
-│   │                           
-│   ├── prompting           <- Prompt engineering techniques to guide the LLM to understand the 
+│   │                           or from an event log.
+│   │
+│   ├── prompting           <- Prompt engineering techniques to guide the LLM to understand the
 │   │   │                       process descriptions and the class ModelGenerator accurately.
 │   │   └── prompt_engineering.py   <- Entry point to the conversation and prompt assembly.
 │   │
@@ -90,9 +92,9 @@ streamlit run app.py
 
 
 # Requirements
- 
+
 ## Environment:
- 
+
 Python 3.10 is recommended for running ProMoAI. The project can be configured by
 
 ### Virtual environment using Poetry
@@ -114,7 +116,7 @@ poetry env activate
 The connection and inference with LLMs is managed in [promoai/general_utils/llm_connection.py](promoai/general_utils/llm_connection.py).
 
 ### Azure OpenAI
-For Azure OpenAI endpoints, ensure that the necessary configuration is provided in the `.env` file with prefix `AZURE_OPENAI_`. Please set a valid `base_url` (i.e. ending in .azure.com), which refers to a valid endpoint, the `model_name` and `model_version`. Using the configuration parameters, the target-URI is assembled in the scheme 
+For Azure OpenAI endpoints, ensure that the necessary configuration is provided in the `.env` file with prefix `AZURE_OPENAI_`. Please set a valid `base_url` (i.e. ending in .azure.com), which refers to a valid endpoint, the `model_name` and `model_version`. Using the configuration parameters, the target-URI is assembled in the scheme
 ```python
 api_url = f"{base_url}/openai/deployments/{model_name}/chat/completions?api-version={model_version}"
 ```
@@ -126,7 +128,7 @@ Not yet implemented!
 
 
 ## Packages:
- 
+
 All required packages are listed in the file 'packages.txt'.
 
 ### [Graphviz](https://graphviz.org/download/)
@@ -134,11 +136,11 @@ All required packages are listed in the file 'packages.txt'.
 <details>
 <summary>Linux</summary>
 
-- Debian, Ubuntu: 
+- Debian, Ubuntu:
     ```
     sudo apt install graphviz
     ```
-- Fedora project, Rocky Linux, Redhat Enterprise Linux, or CentOS: 
+- Fedora project, Rocky Linux, Redhat Enterprise Linux, or CentOS:
     ```
     sudo dnf install graphviz
     ```
@@ -162,7 +164,32 @@ All required packages are listed in the file 'packages.txt'.
 
 </details>
 
- 
+
 # Conventions
 
-TODO
+## Pre-Commit Hooks
+
+Pre-commit hooks are automated tools that run before each commit to ensure your code adheres to predefined quality standards. These hooks are configured in the `.pre-commit-config.yaml` file, which outlines the checks to be executed.
+
+1. **Update Hooks**: Regularly update the hooks to their latest versions by running:
+    ```bash
+    pre-commit autoupdate
+    ```
+
+2. **Run Hooks Manually**: To execute all hooks on all files in the repository, use:
+    ```bash
+    pre-commit run --all-files
+    ```
+
+## Linting and Formatting
+
+Ruff is a fast Python linter and formatter configured in [pyproject.toml](pyproject.toml). Run it with `ruff check` or fix issues automatically using `ruff check --fix`.
+
+Optional: Integrate Ruff into your editor.
+<details open>
+<summary>VS Code</summary>
+
+Install the Ruff extension (identifier: charliermarsh.ruff). In the extension settings, set *Ruff: Configuration Preference* to *filesystemFirst* to prioritize ".toml" configurations.
+</details>
+
+Ruff is also set up as a pre-commit hook via ruff-pre-commit.

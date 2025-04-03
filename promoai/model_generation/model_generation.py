@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from pm4py.objects.powl.obj import POWL
 
 from promoai.general_utils.llm_connection import (
@@ -25,9 +23,9 @@ def extract_model_from_response(response: str, auto_duplicate: bool = False) -> 
     return extracted_code, result
 
 
-def generate_model(conversation: List[dict[str, str]], api_key: str, llm_name: str, ai_provider: str,
+def generate_model(conversation: list[dict[str, str]], api_key: str, llm_name: str, ai_provider: str,
                    max_iterations: int = 10, additional_iterations: int = 5) \
-        -> tuple[str, POWL, List[Dict[str, str]]]:
+        -> tuple[str, POWL, list[dict[str, str]]]:
     return generate_result_with_error_handling(conversation=conversation,
                                                extraction_function=extract_model_from_response,
                                                api_key=api_key,

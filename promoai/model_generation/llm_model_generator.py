@@ -1,5 +1,3 @@
-from typing import Dict, List, Tuple
-
 import pm4py
 from pm4py.objects.bpmn.obj import BPMN
 from pm4py.objects.petri_net.obj import Marking, PetriNet
@@ -16,9 +14,9 @@ from promoai.prompting import create_conversation, update_conversation
 
 
 class LLMProcessModelGenerator:
-    def __init__(self, process_model: POWL, conversation: List[Dict[str, str]]):
+    def __init__(self, process_model: POWL, conversation: list[dict[str, str]]):
         self.process_model: POWL = process_model
-        self.conversation: List[Dict[str, str]] = conversation
+        self.conversation: list[dict[str, str]] = conversation
 
     @classmethod
     def from_description(
@@ -41,7 +39,7 @@ class LLMProcessModelGenerator:
         return cls(powl_model, conversation)
 
 
-    def get_conversation(self) -> List[Dict[str, str]]:
+    def get_conversation(self) -> list[dict[str, str]]:
         return self.conversation
 
     def get_code(self) -> str:
@@ -50,7 +48,7 @@ class LLMProcessModelGenerator:
     def get_powl(self) -> POWL:
         return self.process_model
 
-    def get_petri_net(self) -> Tuple[PetriNet, Marking, Marking]:
+    def get_petri_net(self) -> tuple[PetriNet, Marking, Marking]:
         from pm4py import convert_to_petri_net
         return convert_to_petri_net(self.process_model)
 

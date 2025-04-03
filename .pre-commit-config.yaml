@@ -1,0 +1,56 @@
+# Inspiration: https://towardsdatascience.com/pre-commit-hooks-you-must-know-ff247f5feb7e
+# Apply to all files without commiting:
+#   pre-commit run --all-files
+# Update this file:
+#   pre-commit autoupdate
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    # Prevent big files from being committed.
+      - id: check-added-large-files
+        args: [--maxkb=2000]
+      - id: check-ast
+    # Check for files with names that would conflict on a case-insensitive filesystem like MacOS HFS+ or Windows FAT.
+      - id: check-case-conflict
+      - id: check-docstring-first
+      # - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-toml
+      - id: check-yaml
+    # Check for credentials in the code.
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        files: promoai/
+    # fix UTF-8 byte-order markers
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  # Upgrade old-style python syntax to new-style syntax.
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+    hooks:
+      - id: pyupgrade
+      # py39 instead of py310 to keep Union[] typing
+        args: [--py39-plus]
+        files: promoai/
+
+  # Type Checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [pydantic, types-requests]
+        args: ["--config-file=./pyproject.toml"]
+        files: promoai/
+
+  # Linting and Formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.2
+    hooks:
+      - id: ruff
+        args: [--fix]
+    # currently excluded for merging from humam-kourani/ProMoAI
+  #    - id: ruff-format

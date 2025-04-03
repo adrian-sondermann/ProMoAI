@@ -1,6 +1,5 @@
 from copy import copy
 from itertools import combinations
-from typing import List, Set, Tuple
 
 import pm4py.objects.powl.obj as powl
 from pm4py.objects.petri_net.obj import PetriNet
@@ -26,7 +25,7 @@ def mine_base_case(net: PetriNet) -> powl.Transition:
 
 def mine_self_loop(
     net: PetriNet, start_place: PetriNet.Place, end_place: PetriNet.Place
-) -> tuple[Set[PetriNet.Transition], Set[PetriNet.Transition], PetriNet.Place, PetriNet.Place] | None:
+) -> tuple[set[PetriNet.Transition], set[PetriNet.Transition], PetriNet.Place, PetriNet.Place] | None:
     if start_place == end_place:
         place = start_place
         place_copy = clone_place(net, place, {})
@@ -37,7 +36,7 @@ def mine_self_loop(
             pn_util.remove_arc(net, arc)
             add_arc_from_to(place_copy, target, net)
         do_transition = PetriNet.Transition(f"silent_do_{place.name}", None)
-        do: Set[PetriNet.Transition] = set()
+        do: set[PetriNet.Transition] = set()
         do.add(do_transition)
         net.transitions.add(do_transition)
         add_arc_from_to(place, do_transition, net)
@@ -49,7 +48,7 @@ def mine_self_loop(
 
 def mine_loop(
     net: PetriNet, start_place: PetriNet.Place, end_place: PetriNet.Place
-) -> tuple[Set[PetriNet.Transition], Set[PetriNet.Transition]] | Tuple[None, None]:
+) -> tuple[set[PetriNet.Transition], set[PetriNet.Transition]] | tuple[None, None]:
     redo_subnet_transitions = get_reachable_transitions_from_place_to_another(end_place, start_place)
 
     if len(redo_subnet_transitions) == 0:
@@ -73,7 +72,7 @@ def mine_loop(
 
 def mine_xor(
     net: PetriNet, reachability_map: dict[PetriNet.Transition, set[PetriNet.Transition]]
-) -> List[Set[PetriNet.Transition]]:
+) -> list[set[PetriNet.Transition]]:
     choice_branches = [{t} for t in net.transitions]
 
     for t1, t2 in combinations(net.transitions, 2):
@@ -89,8 +88,8 @@ def mine_xor(
 
 def mine_partial_order(
     net: PetriNet, end_place: PetriNet.Place, reachability_map: dict[PetriNet.Transition, set[PetriNet.Transition]]
-) -> List[Set[PetriNet.Transition]]:
-    partition: List[Set[PetriNet.Transition]] = [{t} for t in net.transitions]
+) -> list[set[PetriNet.Transition]]:
+    partition: list[set[PetriNet.Transition]] = [{t} for t in net.transitions]
 
     for place in net.places:
         out_size = len(place.out_arcs)
@@ -113,9 +112,9 @@ def mine_partial_order(
 
 
 def __combine_parts(transitions_to_group_together: set[PetriNet.Transition],
-                    partition: list[set[PetriNet.Transition]]) -> List[Set[PetriNet.Transition]]:
-    new_partition: List[Set[PetriNet.Transition]] = []
-    new_combined_group: Set[PetriNet.Transition] = set()
+                    partition: list[set[PetriNet.Transition]]) -> list[set[PetriNet.Transition]]:
+    new_partition: list[set[PetriNet.Transition]] = []
+    new_combined_group: set[PetriNet.Transition] = set()
 
     for part in partition:
 

@@ -28,6 +28,8 @@ ProMoAI is a Streamlit app that leverages Large Language Models (currently OpenA
 ├── examples                <- Examples processes, including user process descriptions,
 │                               engineered prompts, user feedback and generated responses.
 │
+├── notebooks               <- Jupyter notebooks. Naming convention is a version number │                               (for ordering) and a short `-` delimited description.
+│
 ├── promoai                 <- Source code for use in this project.
 │   │
 │   ├── general_utils       <- Utility functions and helpers used across the project.
@@ -48,9 +50,6 @@ ProMoAI is a Streamlit app that leverages Large Language Models (currently OpenA
 │   │   └── prompt_engineering.py   <- Entry point to the conversation and prompt assembly.
 │   │
 │   └── main.py             <- Entry point for generating process models.
-│
-├── notebooks               <- Jupyter notebooks. Naming convention is a number (for ordering)
-│                               and a short `-` delimited description.
 │
 ├── scripts                 <- Scripts that are not part of the Python module.
 │
@@ -78,54 +77,84 @@ ProMoAI is a Streamlit app that leverages Large Language Models (currently OpenA
 
 ## Launching the App
 
-You can run GPT4Gov-ProMoAI locally by cloning this repository, setting up the required environment and packages, and copying [.env.example](.env.example) to `.env`.
-```shell
-cp .env.example .env
-```
+To run GPT4Gov-ProMoAI locally, follow these steps:
 
-This `.env` file contains all configuration parameters for the project. Update it with the necessary environment variable values (e.g., API keys). For better type hinting and validation, these variables are wrapped using Pydantic in [promoai/general_utils/config.py](promoai/general_utils/config.py).
+1. **Set Up Configuration**: Copy the template file [.env.example](.env.example) to `.env`:
+    ```shell
+    cp .env.example .env
+    ```
+    Update the `.env` file with the required environment variable values (e.g., API keys). These variables are validated and type-hinted using Pydantic in [promoai/general_utils/config.py](promoai/general_utils/config.py).
 
-Afterwards, execute the application:
-```shell
-streamlit run app.py
-```
+2. **Install Requirements**: Prepare the Python environment, LLM Connections and install the necessary packages as outlined in the [Requirements](#requirements) section.
 
+3. **Launch the Application**: Once all requirements are met, start the application using:
+    ```shell
+    streamlit run app.py
+    ```
 
 # Requirements
 
 ## Environment:
 
-Python 3.10 is recommended for running ProMoAI. The project can be configured by
+Python 3.11 is required for running ProMoAI, due to the langchain_ai_portal wheel requiring Python 3.11. Initially, [humam-kourani/ProMoAI](https://github.com/humam-kourani/ProMoAI) was tested on both Python 3.9 and 3.10.
 
 ### Virtual environment using Poetry
 
-All required dependencies are listed in [pyproject.toml](pyproject.toml) in the list `dependencies`. Dependencies only required during development are listed in section `[tool.poetry.group.dev.dependencies]`. In order to install the dependencies run and activate the virtual environment run
+In order to activate the virtual environment and install all dependencies run
 ```shell
-pip install poetry
+pip install --upgrade poetry
 # Configure .venv locally within this project directory
 poetry config virtualenvs.in-project true
 
 poetry lock
 poetry install
-poetry install --with dev
-# prints the activate command of the python .venv. Afterwards, execute the displayed command manually 
+# Prints the activate command of the python .venv. Afterwards, execute the displayed command manually
 poetry env activate
+# For example using bash on Linux:
+source .venv/bin/activate
 ```
+
+**Poetry** is used to manage all Python dependencies in your project. It simplifies adding, updating, and removing dependencies while ensuring compatibility. Dependencies are defined in the [pyproject.toml](pyproject.toml) file in the list `dependencies`, and Poetry handles their installation and versioning. Dependencies only required during development are listed in section `[tool.poetry.group.dev.dependencies]`.
+
+The `poetry add <package>` command is used to add a new dependency *package* to your project. This updates the [pyproject.toml](pyproject.toml) file automatically. Adding dependencies, which are not required during production or demos, to the development (dev) group is done by using `poetry add <package> -G dev`. 
+
 
 ## LLM Connection
 
 The connection and inference with LLMs is managed in [promoai/general_utils/llm_connection.py](promoai/general_utils/llm_connection.py).
 
 ### Azure OpenAI
-For Azure OpenAI endpoints, ensure that the necessary configuration is provided in the `.env` file with prefix `AZURE_OPENAI_`. Please set a valid `base_url` (i.e. ending in .azure.com), which refers to a valid endpoint, the `model_name` and `model_version`. Using the configuration parameters, the target-URI is assembled in the scheme
+For Azure OpenAI endpoints, ensure that the necessary configuration is provided in the `.env` file with prefix `AZURE_OPENAI_`. Please set a valid `AZURE_OPENAI_BASE_URL` (i.e. ending in .azure.com), which refers to a valid endpoint, the `AZURE_OPENAI_MODEL_NAME` and `AZURE_OPENAI_MODEL_VERSION`. Using the configuration parameters, the target-URI is assembled following the scheme
 ```python
+base_url = config.azure_openai.base_url             # ending in ".azure.com"
+model_name = config.azure_openai.model_name         # e.g. "gpt-4o"
+model_version = config.azure_openai.model_version   # e.g. "2025-01-01-preview"
 api_url = f"{base_url}/openai/deployments/{model_name}/chat/completions?api-version={model_version}"
 ```
 Additionally, please provide the `api_key`.
 
 ### LangChain AI Portal Wheel
 
-Not yet implemented!
+Before continuing, please ensure you have access to an AI Portal supporting the `App-Entwicklung` app, and its administration. First, copy the latest **langchain_ai_portal .whl** into the folder `./wheels/`.
+
+In order to ensure the correct version is installed, remove and re-add the latest wheel:
+```shell
+poetry remove langchain-ai-portal
+# replace {MAJOR.MINOR.PATCH} with latest version
+poetry add --lock ./wheels/langchain_ai_portal-{MAJOR.MINOR.PATCH}-py3-none-any.whl
+
+# shell script to convert absolute paths added to pyproject.toml with relative paths
+# only for the first time per system run
+chmod +x scripts/relativize-dependencies.sh
+# execute script
+scripts/relativize-dependencies.sh
+
+# lock an reinstall
+poetry lock
+poetry install
+```
+
+With the python module `langchain_ai_portal` you can access LLMs currently hosted on-prem in the AI Portal. In the [.env](.env) set the `PORTAL_API_HOST`, provide your `PORTAL_API_API_KEY` and set the default completion model `PORTAL_API_MODEL_NAME`, formatted as `organization/model_name`.
 
 
 ## Packages:

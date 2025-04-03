@@ -2,6 +2,8 @@ import traceback
 from typing import Any, Callable, TypeVar
 
 import requests
+from langchain_ai_portal import UbitecAiPortalSdkChat
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from pm4py.objects.powl.obj import POWL
 
 from promoai.general_utils import constants
@@ -183,8 +185,29 @@ def generate_response_with_history_azure_openai(conversation_history: list[dict[
 def generate_response_with_history_portal_api(conversation_history: list[dict[str, str]]) -> str:
     # host = config.portal_api.host
     # port = config.portal_api.port
-    # sdk_api_key = config.portal_api.sdk_api_key
+    # api_key = config.portal_api.api_key
     # use_ssl = config.portal_api.use_ssl
+    # model_identifier = config.portal_api.model_identifier
+
+    # chat_model = UbitecAiPortalSdkChat(
+    #     portal_api_host=host,
+    #     portal_api_port=port,
+    #     portal_api_sdk_apikey=api_key,
+    #     portal_api_use_ssl=use_ssl,
+    #     model=model_identifier,
+    #     model_kwargs={
+    #         "temperature": config.model.temperature
+    #     },
+    #     streaming=False, # streaming should probably be False within ProMoAI
+    # )
+
+    # async def call_chat_model(model: UbitecAiPortalSdkChat, conversation_history: list[dict[str, str]]) -> BaseMessage:
+    #     # TODO: somehow assemble langchain message object, as seen in 0.1.0_test notebook
+
+    #     # message = [SystemMessage(content=system_message)] + [HumanMessage(content=user_message)]
+    #     response = await model.ainvoke(message)
+    #     # response = await model.ainvoke(user_message) # works as well, but answer different
+    #     return response
 
     # TODO
     raise Exception("LangChain AI Portal API request failed: Not yet implemented")

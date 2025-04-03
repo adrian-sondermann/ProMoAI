@@ -10,6 +10,23 @@ _DOTENV_FILE: Path = _PROJECT_ROOT / ".env"
 load_dotenv(dotenv_path=_DOTENV_FILE, override=True)
 
 
+class _Model(BaseSettings):
+    """
+    Configuration for the general LLM parameters.
+    Reads environment variables from `.env` file (case-insensitive) with prefix `MODEL_`.
+    """
+
+    max_tokens: int = 3000
+    "The maximum number of tokens that can be generated in the chat completion."
+    temperature: float = 0.0
+    """Float controlling the randomness of the sampling. Lower values make the model more
+    deterministic, while higher values make the model more random. Zero means greedy sampling."""
+
+    model_config = SettingsConfigDict(
+        env_file=_DOTENV_FILE, env_prefix="MODEL_", extra="ignore"
+    )
+
+
 class _AzureOpenAI(BaseSettings):
     """
     Configuration for Azure OpenAI Endpoints.
@@ -34,8 +51,11 @@ class _PortalAPI(BaseSettings):
 
     host: str = ""  # set in .env file to use the Langchain AI Portal API
     port: int = 443
-    sdk_api_key: str = ""  # set in .env file to use the Langchain AI Portal API
     use_ssl: bool = True
+    api_key: str = ""  # set in .env file to use the Langchain AI Portal API
+
+    model_identifier: str = "microsoft/phi-4"
+    "HuggingFace model identifier as implemented in the AI Portal API, formatted as 'organization/model_name'."
 
     model_config = SettingsConfigDict(
         env_file=_DOTENV_FILE, env_prefix="PORTAL_API_", extra="ignore"
@@ -66,6 +86,8 @@ class Config(BaseSettings):
         logging (_LOGGING): Configuration for logging.
     """
 
+    model: _Model = _Model()
+    "Configuration for the general LLM parameters."
     azure_openai: _AzureOpenAI = _AzureOpenAI()
     "Configuration for Azure OpenAI Endpoints"
     portal_api: _PortalAPI = _PortalAPI()
